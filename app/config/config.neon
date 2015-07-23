@@ -20,6 +20,7 @@ session:
 
 services:
 	router: App\RouterFactory::createRouter
+	- App\Models\Users
 
 extensions:
     # add theese four lines
