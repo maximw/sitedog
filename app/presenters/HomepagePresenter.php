@@ -15,7 +15,7 @@ class HomepagePresenter extends Nette\Application\UI\Presenter
     public $usersModel;
 
     public function actionDefault() {
-        $this->usersModel->create();
+        //$this->usersModel->create();
         $this->usersModel->all();
     }
 
