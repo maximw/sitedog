@@ -6,17 +6,11 @@ use Nette;
 use App\Models;
 
 
-class HomepagePresenter extends Nette\Application\UI\Presenter
+class HomepagePresenter extends BasePresenter
 {
 
-    /**
-     * @var \App\Models\Users @inject
-     */
-    public $usersModel;
-
     public function actionDefault() {
-        //$this->usersModel->create();
-        $this->usersModel->all();
+
     }
 
 }

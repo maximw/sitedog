@@ -3,12 +3,15 @@
         <li>
             <a class="page-scroll" href="/#about">About</a>
         </li>
-        <li>
-            <a class="page-scroll" href="/#contact">Contact</a>
-        </li>
     {if $user->loggedIn}
         <li>
-            <p class="navbar-text">{$user->identity->username}</p>
+            <a class="page-scroll" href="/tasks">Tasks</a>
+        </li>
+        <li>
+            <a class="page-scroll" href="/contacts">Contacts</a>
+        </li>
+        <li>
+            <p class="navbar-text">{$user->getIdentity()->username}</p>
         </li>
         <li>
             <a n:href="User:logout">Logout</a>

@@ -1,0 +1,129 @@
+{syntax double}
+/*
+.---------------------------------------------------------------------------.
+|  Software: Sitedog client side script                                     |
+|   Version: 0.1                                                            |
+|   Contact: info@sitedog.ru		                                        |
+|      Info: http://sitedog.ru                                              |
+| ------------------------------------------------------------------------- |
+|    Author: Maxim W Naguchev (project admininistrator)                     |
+'---------------------------------------------------------------------------'
+*/
+$key = '{{$key}}';
+$version = '0.1';
+
+$response = array();
+
+if (!isset($_POST['cmd'])) {
+	echo 'Sitedog';
+	die;
+}
+
+$command = json_decode(sitedogDecrypt($_POST['cmd'], $key), true);
+if (!is_array($command)) {
+	sitedogHttpResponse(400);
+	die;
+}
+
+echo $command['mark'];
+
+if ($command['command'] == 'check') {
+	$dir = $command['directory'];
+	if(empty($dir)) {
+		$dir = $_SERVER['DOCUMENT_ROOT'];
+	}
+	if (!is_dir($dir)) {
+		$response['error'] = 1;
+		$response['message'] = 'Directory not found';
+		echo sitegogEncrypt(json_encode($response), $key);
+		die;
+	}
+
+	if ($command['extensions'] == '') {
+		$extensions = array();
+	} else {
+		$extensions = explode(',', $command['extensions']);
+	}
+
+	$begin = microtime(true);
+	$limit = (ini_get('max_execution_time') - 2)*1000;
+	$files = sitedogFileSearch($dir, $extensions, $begin, $limit);
+	$response['files'] = $files;
+}
+
+sitedogHttpResponse(200);
+echo sitedogEncrypt(json_encode($response), $key);
+
+function sitedogFileSearch($dir, $extensions, $begin, $limit) {
+	global $key;
+	$files = array();
+	if (is_dir($dir) && $handle = opendir($dir)) {
+		while (false !== ($file = readdir($handle))) {
+			if (microtime(true) - $begin > $limit) {
+				$response['error'] = 1;
+				$response['message'] = 'Not enough time';
+				sitedogHttpResponse(202);
+				echo sitedogEncrypt(json_encode($response), $key);
+				die;
+			}
+			if (!in_array($file, array('.', '..'))) {
+				if (is_dir($dir.'/'.$file)) {
+					$files = array_merge($files, sitedogFileSearch($dir.'/'.$file, $extensions, $begin, $limit));
+				} else {
+					$filename = $dir.'/'.$file;
+					$ext = pathinfo($filename, PATHINFO_EXTENSION);
+					if (in_array($ext, $extensions)) {
+						$files[md5($filename)] = md5_file($filename);
+					}
+				}
+			}
+		}
+		closedir($handle);
+	}
+	return $files;
+}
+
+function sitedogHttpResponse($code = 200) {
+	switch ($code) {
+		case 202: $text = 'Accepted'; break;
+        case 400: $text = 'Bad Request'; break;
+		default:
+			$code = 200;
+			$text = 'OK'; break;
+		break;
+	}
+	$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
+	return $protocol.' '.$code.' '.$text;
+}
+
+// TODO Add mcrypt
+// TODO Add HMAC
+function sitedogEncrypt($text, $key) {
+    $iv_size = openssl_cipher_iv_length('AES-256-CBC');
+    $iv = openssl_random_pseudo_bytes($iv_size);
+    if (strlen($iv) != $iv_size) {
+        throw new Exception('Error receiving IV');
+    }
+    $result = $iv.openssl_encrypt($text, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+    return sitedogSafeString($result);
+}
+
+function sitedogDecrypt($text, $key) {
+    $text = sitedogRawString($text);
+    $iv_size = openssl_cipher_iv_length('AES-256-CBC');
+    $iv = substr($text, 0, $iv_size);
+    $text = substr($text, $iv_size);
+    $result = openssl_decrypt($text, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+    return $result;
+}
+
+/*
+ * RFC3548
+ */
+function sitedogSafeString($text) {
+    return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
+}
+
+function sitedogRawString($text) {
+    return base64_decode(str_pad(strtr($text, '-_', '+/'), strlen($text) % 4, '=', STR_PAD_RIGHT));
+}

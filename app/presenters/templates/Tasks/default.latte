@@ -1,0 +1,50 @@
+{layout "../@layout.latte"}
+
+{block title}
+Tasks
+{/block}
+
+{block content}
+{snippet table}
+<div class="container">
+    <div class="row">
+        <p><a n:href="edit" class="btn btn-primary btn-lg">Add task</a></p>
+    </div>
+    <div class="row">
+        <table class="grid table table-hover">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>URL</th>
+            <th>Start directory</th>
+            <th>File's extensions</th>
+            <th>Contacts</th>
+            <th>Last status</th>
+            <th>Last check</th>
+            <th>&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody class="">
+        {foreach $tasks as $task}
+        <tr>
+            <td>{$task->title}</td>
+            <td>{$task->url}</td>
+            <td>{$task->directory}</td>
+            <td>{$task->extensions}</td>
+            <td>{count($task->contacts)}</td>
+            <td>{$task->last_status}</td>
+            <td>{$task->last_check ? date('d-m-Y H:i', $task->last_check) : '-'}</td>
+            <td class="text-right">
+                <a n:href="download, $task->id" class="btn btn-link btn-xs"><i class="fa fa-download fa-1"></i>&nbsp;Client</a>
+                <a n:href="checks, $task->id" class="btn btn-success btn-xs"><i class="fa fa-check-circle-o fa-1"></i>&nbsp;Checks</a>
+                <a n:href="edit, $task->id" class="btn btn-primary btn-xs"><i class="fa fa-pencil-square-o fa-1"></i>&nbsp;Edit</a>
+                <a n:href="delete, $task->id" class="btn btn-danger btn-xs"><i class="fa fa-minus-circle fa-1"></i>&nbsp;Delete</a>
+            </td>
+        </tr>
+        {/foreach}
+        </tbody>
+        </table>
+    </div>
+</div>
+{/snippet}
+{/block}

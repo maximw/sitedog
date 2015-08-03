@@ -7,8 +7,8 @@ use App\Entities;
 
 class Users extends Nette\Object
 {
-    private $em;
-    private $usersRepo;
+    protected $em;
+    protected $usersRepo;
 
     public function __construct(\Kdyby\Doctrine\EntityManager $em)
     {

@@ -9,6 +9,7 @@ php:
 
 
 application:
+    catchExceptions: true
     errorPresenter: Error
     mapping:
         *: App\*Module\Presenters\*Presenter
@@ -17,14 +18,44 @@ application:
 session:
     expiration: 14 days
 
+doctrine:
+    server: localhost
+    user: maximw1_sitedog
+    password: 'NcmcZ2qHrQ]2'
+    dbname: maximw1_sitedog
+    debug: off
+    metadata:
+        App: %appDir%/entites
 
 services:
     router: App\RouterFactory::createRouter
     authenticator: App\Models\Authenticator
+    authorizator:
+        class: Nette\Security\Permission
+        setup:
+            - addRole('guest')
+            - addRole('user')
+            - addResource('Homepage')
+            - addResource('Tasks')
+            - addResource('Contacts')
+            - addResource('User')
+            - addResource('User:registration')
+            - addResource('User:login')
+            - addResource('User:logout')
+            - allow('guest', 'Homepage')
+            - allow('guest', 'User:registration')
+            - allow('guest', 'User:login')
+            - allow('user',  'Homepage')
+            - allow('user',  'User')
+            - allow('user',  'User:logout')
+            - allow('user',  'Tasks')
+            - allow('user',  'Contacts')
     - App\Models\Users
+    - App\Models\Tasks
+    - App\Models\Contacts
+    - App\Models\Channels\ChannelsFactory
 
 extensions:
-    # add theese four lines
     console: Kdyby\Console\DI\ConsoleExtension
     events: Kdyby\Events\DI\EventsExtension
     annotations: Kdyby\Annotations\DI\AnnotationsExtension

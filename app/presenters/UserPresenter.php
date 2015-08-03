@@ -8,7 +8,7 @@ use Nette;
 use Nette\Utils\Validators;
 use Nette\Application\UI;
 
-class UserPresenter extends Nette\Application\UI\Presenter
+class UserPresenter extends BasePresenter
 {
 
     /**
@@ -39,6 +39,9 @@ class UserPresenter extends Nette\Application\UI\Presenter
 			->setRequired('Please enter your password.');
 		$form->addSubmit('send', 'Enter');
 		$form->onSuccess[] = [$this, 'loginFormSucceeded'];
+
+        $form = static::bootstrapifyForm($form);
+
 		return $form;
 	}
 
@@ -73,6 +76,9 @@ class UserPresenter extends Nette\Application\UI\Presenter
             ->addRule(UI\Form::EQUAL, 'Password missmatch', $form['password']);
 		$form->addSubmit('send', 'Enter');
 		$form->onSuccess[] = [$this, 'registrationFormSucceeded'];
+
+        $form = static::bootstrapifyForm($form);
+
 		return $form;
 	}
 

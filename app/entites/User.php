@@ -28,5 +28,21 @@ class User extends \Kdyby\Doctrine\Entities\BaseEntity
      */
     protected $password;
 
+    /**
+     * @ORM\OneToMany(targetEntity="Task", mappedBy="User", cascade={"remove"})
+     */
+    protected $tasks;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Contact", mappedBy="User", cascade={"remove"})
+     */
+    protected $contacts;
+
+    public function __construct()
+    {
+        $this->tasks = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->contacts = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
 
 }

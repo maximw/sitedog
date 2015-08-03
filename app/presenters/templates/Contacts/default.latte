@@ -1,0 +1,39 @@
+{layout "../@layout.latte"}
+
+{block title}
+Contacts
+{/block}
+
+{block content}
+{snippet table}
+<div class="container">
+    <div class="row">
+        <p><a n:href="add" class="btn btn-primary btn-lg">Add contact</a></p>
+    </div>
+    <div class="row">
+        <table class="grid table table-hover">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Value</th>
+            <th>Is verified</th>
+            <th>&nbsp;</th>
+        </tr>
+        </thead>
+        <tbody class="">
+        {foreach $contacts as $contact}
+        <tr>
+            <td>{$contact->channel->name()}</td>
+            <td>{$contact->value}</td>
+            <td>{($contact->is_verified ? '<i class="fa fa-check-square-o text-success"></i>' : '<i class="fa fa-warning text-warning"></i>')|noescape}</td>
+            <td class="text-right">
+                <a n:href="delete, $contact->id" class="btn btn-danger btn-xs"><i class="fa fa-minus-circle fa-1"></i>&nbsp;Delete</a>
+            </td>
+        </tr>
+        {/foreach}
+        </tbody>
+        </table>
+    </div>
+</div>
+{/snippet}
+{/block}

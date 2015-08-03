@@ -31,7 +31,7 @@ class Authenticator extends Nette\Object implements NS\IAuthenticator
             throw new NS\AuthenticationException('Invalid password.');
         }
 
-        return new NS\Identity($user->id, 0, array('username' => $user->email));
+        return new NS\Identity($user->id, 'user', array('username' => $user->email));
     }
 
 
