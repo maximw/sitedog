@@ -30,7 +30,7 @@ class TasksPresenter extends BasePresenter
             $temp_files = $this->formatTemplateFiles();
             $this->template->setFile($temp_files[0]);
             $this->template->key = $task->password;
-            $code = '<?php\n'.PHP_EOL.(string)$this->template;
+            $code = '<?php'.PHP_EOL.(string)$this->template;
 
             header("Cache-Control: private");
             header("Content-Type: application/stream");

@@ -1,0 +1,1 @@
+/home/max/www/sitedog.local/vendor/doctrine/orm/bin/doctrine.php
