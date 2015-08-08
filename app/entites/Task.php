@@ -109,7 +109,7 @@ class Task extends \Kdyby\Doctrine\Entities\BaseEntity
     protected $contacts;
 
     /**
-     * @ORM\OneToMany(targetEntity="Check", mappedBy="Task", cascade={"remove"})
+     * @ORM\OneToMany(targetEntity="Check", mappedBy="task", cascade={"remove"})
      */
     protected $checks;
 

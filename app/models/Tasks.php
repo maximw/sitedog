@@ -111,9 +111,9 @@ class Tasks extends Nette\Object
     public function getNextToCheck($limit)
     {
         $qb = $this->tasksRepo->createQueryBuilder('t');
-        $qb->where($qb->expr()->lt($qb->expr()->sum('t.last_check', 't.check_interval'), ':time'));
+        //$qb->where($qb->expr()->lt($qb->expr()->sum('t.last_check', 't.check_interval'), ':time'));
         $qb->orderBy($qb->expr()->sum('t.last_check', 't.check_interval'), 'ASC');
-        $qb->setParameter('time', time());
+        //$qb->setParameter('time', time());
         $qb->setMaxResults($limit);
         $query = $qb->getQuery();
         $tasks = $query->getResult();
@@ -224,7 +224,7 @@ class Tasks extends Nette\Object
 
             if ($changed > 0 ||  $new > 0 || $deleted > 0) {
                 foreach($task->contacts as $contact) {
-                    $message = $contact->getChannel()->sendAlert($task);
+                    $contact->getChannel()->sendAlert($task);
                 }
             }
 
