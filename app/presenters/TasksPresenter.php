@@ -14,6 +14,12 @@ class TasksPresenter extends BasePresenter
 
     }
 
+    public function actionTest()
+    {
+        $task = $this->tasksModel->getNextToCheck();
+die;
+    }
+
     public function actionChecks($id = 0)
     {
         $this->error('Not ready yet');

@@ -2,7 +2,14 @@
 # http://nette.org/security-warning
 
 parameters:
-
+    config:
+        cron:
+            batchsize: 100
+        channels:
+            email:
+                from: info@sitedog.ru
+            telegram:
+                from: sitedog
 
 php:
     date.timezone: Europe/Prague
@@ -23,9 +30,14 @@ doctrine:
     user: maximw1_sitedog
     password: 'NcmcZ2qHrQ]2'
     dbname: maximw1_sitedog
-    debug: off
+    debug: on
     metadata:
         App: %appDir%/entites
+
+console:
+    url: http://sitedog.ru
+    commands:
+        - App\Console\CheckCommand
 
 services:
     router: App\RouterFactory::createRouter
@@ -50,6 +62,8 @@ services:
             - allow('user',  'User:logout')
             - allow('user',  'Tasks')
             - allow('user',  'Contacts')
+    - App\Models\Config( %config% )
+    - App\Models\Crypto
     - App\Models\Users
     - App\Models\Tasks
     - App\Models\Contacts

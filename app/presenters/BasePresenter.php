@@ -13,6 +13,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
 {
 
     /**
+     * @var \App\Models\Config @inject
+     */
+    public $config;
+
+    /**
      * @var \App\Models\Users @inject
      */
     public $usersModel;

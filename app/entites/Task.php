@@ -80,6 +80,26 @@ class Task extends \Kdyby\Doctrine\Entities\BaseEntity
     protected $last_check;
 
     /**
+     * @ORM\Column(type="string")
+     */
+    protected $last_result;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    protected $changed;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    protected $new;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    protected $deleted;
+
+    /**
      * @ORM\ManyToMany(targetEntity="Contact")
      * @ORM\JoinTable(name="tasks_contacts",
      *      joinColumns={@ORM\JoinColumn(name="task_id", referencedColumnName="id")},
@@ -88,9 +108,20 @@ class Task extends \Kdyby\Doctrine\Entities\BaseEntity
      **/
     protected $contacts;
 
+    /**
+     * @ORM\OneToMany(targetEntity="Check", mappedBy="Task", cascade={"remove"})
+     */
+    protected $checks;
+
     public function __construct()
     {
         $this->contacts = new \Doctrine\Common\Collections\ArrayCollection();
     }
+
+    public function getClientUrl()
+    {
+        $this->url.$this->filename.'.php';
+    }
+
 
 }

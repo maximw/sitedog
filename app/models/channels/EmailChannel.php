@@ -17,13 +17,19 @@ class EmailChannel extends BaseChannel
     public function sendMessage($message)
     {
         $mail = new Message;
-        $mail->setFrom('John <john@example.com>')
+        $mail->setFrom('robot@sitedog.ru')
             ->addTo($this->value)
-            ->setSubject('Sitedog notice')
+            ->setSubject('Sitedog alert')
             ->setBody($message);
 
         $mailer = new SendmailMailer;
         $mailer->send($mail);
+    }
+
+    public function formatAlert($task)
+    {
+        return $task->title.' new:'.$task->new.' changed:'.$task->changed.' deleted:'.$task->deleted;
+
     }
 
     public function name()

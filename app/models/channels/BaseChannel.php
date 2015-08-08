@@ -16,6 +16,17 @@ abstract class BaseChannel extends Nette\Object
     {
     }
 
+    public function sendAlert($task)
+    {
+        $message = $this->formatAlert($task);
+        $this->sendMessage($message);
+    }
+
+    public function formatAlert($task)
+    {
+        return 'Some changes were detected during checking "'.$task->title.'".';
+    }
+
 
     public function generateCode()
     {

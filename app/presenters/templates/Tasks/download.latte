@@ -22,8 +22,6 @@ if (!is_array($command)) {
 	die;
 }
 
-echo $command['mark'];
-
 if ($command['command'] == 'check') {
 	$dir = $command['directory'];
 	if(empty($dir)) {
@@ -36,9 +34,8 @@ if ($command['command'] == 'check') {
 		die;
 	}
 
-	if ($command['extensions'] == '') {
-		$extensions = array();
-	} else {
+    $extensions = array();
+	if (!empty($command['extensions'])) {
 		$extensions = explode(',', $command['extensions']);
 	}
 
