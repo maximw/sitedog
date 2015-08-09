@@ -24,7 +24,7 @@ class EmailChannel extends BaseChannel
     public function formatAlert($task)
     {
 
-        $latte = new Latte\Engine;
+        $latte = new \Latte\Engine;
         $params = array(
             'title' => $task->title,
             'new'  => $task->new,
