@@ -248,7 +248,7 @@ class Tasks extends Nette\Object
 
         }
 
-        if (true || $changed > 0 ||  $new > 0 || $deleted > 0) {
+        if ($changed > 0 ||  $new > 0 || $deleted > 0) {
             foreach($task->contacts as $contact) {
                 $this->contactsModel->getChannel($contact)->sendAlert($task);
             }

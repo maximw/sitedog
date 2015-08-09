@@ -7,7 +7,7 @@ parameters:
             batchsize: 100
         channels:
             email:
-                from: info@sitedog.ru
+                from: 'Sitedog <robot@sitedog.ru>'
 
 php:
     date.timezone: Europe/Prague

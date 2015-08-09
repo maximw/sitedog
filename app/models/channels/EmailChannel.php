@@ -15,7 +15,7 @@ class EmailChannel extends BaseChannel
         $mail->setFrom($this->config['from'])
             ->addTo($this->value)
             ->setSubject('Sitedog alert')
-            ->setBody($message);
+            ->setHTMLBody($message);
 
         $mailer = new SendmailMailer;
         $mailer->send($mail);
@@ -23,8 +23,16 @@ class EmailChannel extends BaseChannel
 
     public function formatAlert($task)
     {
-        return $task->title.' new:'.$task->new.' changed:'.$task->changed.' deleted:'.$task->deleted;
 
+        $latte = new Latte\Engine;
+        $params = array(
+            'title' => $task->title,
+            'new'  => $task->new,
+            'changed'  => $task->changed,
+            'deleted'  => $task->deleted,
+        );
+
+        return $latte->renderToString(__DIR__.DIRECTORY_SEPARATOR.'email.latte', $params);
     }
 
     public function name()
