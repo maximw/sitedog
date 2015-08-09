@@ -9,7 +9,7 @@ parameters:
             email:
                 from: info@sitedog.ru
             telegram:
-                from: sitedog
+                token: '27891869:AAG3SsGjls2zVGiIN45xv0FFitMRcsEbYV4'
 
 php:
     date.timezone: Europe/Prague

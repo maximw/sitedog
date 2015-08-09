@@ -73,6 +73,10 @@ class Contacts extends Nette\Object
     public function getByUser($user_id)
     {
         $contacts = $this->contactsRepo->findBy(['user.id' => $user_id]);
+        foreach($contacts as $contact) {
+            $this->getChannel($contact);
+        }
+
         return $contacts;
     }
 
