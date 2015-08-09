@@ -49,7 +49,7 @@ class TasksPresenter extends BasePresenter
             echo $code;
             die;
 		} else {
-           $this->error('No permissions'); 
+           $this->error('No permissions');
         }
 
     }
@@ -103,7 +103,7 @@ class TasksPresenter extends BasePresenter
         $allContacts = $this->contactsModel->getByUser($this->getUser()->getId());
         $contacts = array();
         foreach($allContacts as $contact) {
-            $contacts[$contact->id] = $contact->channel->name().' '.$contact->value;
+            $contacts[$contact->id] = $this->contactsModel->getChannel($contact)->name().' '.$contact->value;
         }
         $form->addCheckboxList('contacts', 'Contacts', $contacts);
 
