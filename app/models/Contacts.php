@@ -76,6 +76,14 @@ class Contacts extends Nette\Object
         return $contacts;
     }
 
+    public function getChannel($contact)
+    {
+        if (empty($contact->channel)) {
+            $contact->channel = $this->channelsFactory->getChannel($contact->type, $contact->value);
+        }
+        return $contact->channel;
+    }
+
 
     public function getChannels()
     {

@@ -8,16 +8,11 @@ use Nette\Mail\SendmailMailer;
 
 class EmailChannel extends BaseChannel
 {
-    protected $value;
-
-    public function __construct($value) {
-        $this->value = $value;
-    }
 
     public function sendMessage($message)
     {
         $mail = new Message;
-        $mail->setFrom('robot@sitedog.ru')
+        $mail->setFrom($this->config['from'])
             ->addTo($this->value)
             ->setSubject('Sitedog alert')
             ->setBody($message);

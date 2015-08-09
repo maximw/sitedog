@@ -7,9 +7,11 @@ use Nette;
 abstract class BaseChannel extends Nette\Object
 {
     protected $value;
+    protected $config;
 
-    public function __construct($value) {
+    public function __construct($value, $config) {
         $this->value = $value;
+        $this->config = $config;
     }
 
     public function sendMessage($message)

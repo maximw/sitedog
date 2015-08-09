@@ -7,7 +7,6 @@ use Nette;
 class TelegramChannel extends BaseChannel
 {
     protected $value;
-    protected $token;
 
     public function __construct($value) {
         $this->value = $value;
@@ -15,7 +14,7 @@ class TelegramChannel extends BaseChannel
 
     public function sendMessage($message)
     {
-        
+
     }
 
     public function name()

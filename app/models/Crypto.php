@@ -19,8 +19,8 @@ class Crypto extends Nette\Object
     {
         if ($this->isOpenSSL) {
             return $this->encryptOpenSSL($text, $key);
-        } elseif ($this->isMcrypt) {
-            return $this->encryptMcrypt($text, $key);
+        //} elseif ($this->isMcrypt) {
+            //return $this->encryptMcrypt($text, $key);
         } else {
             throw new \Exception('No any crypto extension');
         }
@@ -30,8 +30,8 @@ class Crypto extends Nette\Object
     {
         if ($this->isOpenSSL) {
             return $this->decryptOpenSSL($text, $key);
-        } elseif ($this->isMcrypt) {
-            return $this->decryptMcrypt($text, $key);
+        //} elseif ($this->isMcrypt) {
+            //return $this->decryptMcrypt($text, $key);
         } else {
             throw new \Exception('No any crypto extension');
         }
@@ -57,13 +57,22 @@ class Crypto extends Nette\Object
         return $result;
     }
 
-    public function encryptMcrypt($text, $key)
-    {
+
+    public function encryptMcrypt($text, $key) {
+        $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+        $iv = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM);
+        if (strlen($iv) != $iv_size) {
+            throw new \Exception('Error receiving IV');
+        }
+        $result = $iv.mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $text, MCRYPT_MODE_CBC, $iv);
         return $result;
     }
 
-    public function decryptMcrypt($text, $key)
-    {
+    public function decryptMcrypt($text, $key) {
+        $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+        $iv = substr($text, 0, $iv_size);
+        $text = substr($text, $iv_size);
+        $result = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $text, MCRYPT_MODE_CBC, $iv);
         return $result;
     }
 

@@ -120,7 +120,7 @@ class Task extends \Kdyby\Doctrine\Entities\BaseEntity
 
     public function getClientUrl()
     {
-        $this->url.$this->filename.'.php';
+        return $this->url.$this->filename.'.php';
     }
 
 

@@ -1,123 +1,186 @@
 {syntax double}
-/*
+/**
  *  Software: Sitedog client side script
  *  Version: 0.1
  *  Contact: info@sitedog.ru
  *  Info: http://sitedog.ru
  *  Author: Maxim W Naguchev
  */
-$key = '{{$key}}';
-$version = '0.1';
 
-$response = array();
-
-if (!isset($_POST['cmd'])) {
-	echo 'Sitedog';
-	die;
-}
-
-$command = json_decode(sitedogDecrypt($_POST['cmd'], $key), true);
-if (!is_array($command)) {
-	sitedogHttpResponse(400);
-	die;
-}
-
-if ($command['command'] == 'check') {
-	$dir = $command['directory'];
-	if(empty($dir)) {
-		$dir = $_SERVER['DOCUMENT_ROOT'];
-	}
-	if (!is_dir($dir)) {
-		$response['error'] = 1;
-		$response['message'] = 'Directory not found';
-		echo sitegogEncrypt(json_encode($response), $key);
-		die;
-	}
-
-    $extensions = array();
-	if (!empty($command['extensions'])) {
-		$extensions = explode(',', $command['extensions']);
-	}
-
-	$begin = microtime(true);
-	$limit = (ini_get('max_execution_time') - 2)*1000;
-	$files = sitedogFileSearch($dir, $extensions, $begin, $limit);
-	$response['files'] = $files;
-}
-
-sitedogHttpResponse(200);
-echo sitedogEncrypt(json_encode($response), $key);
-
-function sitedogFileSearch($dir, $extensions, $begin, $limit) {
-	global $key;
-	$files = array();
-	if (is_dir($dir) && $handle = opendir($dir)) {
-		while (false !== ($file = readdir($handle))) {
-			if (microtime(true) - $begin > $limit) {
-				$response['error'] = 1;
-				$response['message'] = 'Not enough time';
-				sitedogHttpResponse(202);
-				echo sitedogEncrypt(json_encode($response), $key);
-				die;
-			}
-			if (!in_array($file, array('.', '..'))) {
-				if (is_dir($dir.'/'.$file)) {
-					$files = array_merge($files, sitedogFileSearch($dir.'/'.$file, $extensions, $begin, $limit));
-				} else {
-					$filename = $dir.'/'.$file;
-					$ext = pathinfo($filename, PATHINFO_EXTENSION);
-					if (in_array($ext, $extensions)) {
-						$files[md5($filename)] = md5_file($filename);
-					}
-				}
-			}
-		}
-		closedir($handle);
-	}
-	return $files;
-}
-
-function sitedogHttpResponse($code = 200) {
-	switch ($code) {
-		case 202: $text = 'Accepted'; break;
-        case 400: $text = 'Bad Request'; break;
-		default:
-			$code = 200;
-			$text = 'OK'; break;
-		break;
-	}
-	$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
-	return $protocol.' '.$code.' '.$text;
-}
-
-// TODO Add mcrypt
-// TODO Add HMAC
-function sitedogEncrypt($text, $key) {
-    $iv_size = openssl_cipher_iv_length('AES-256-CBC');
-    $iv = openssl_random_pseudo_bytes($iv_size);
-    if (strlen($iv) != $iv_size) {
-        throw new Exception('Error receiving IV');
-    }
-    $result = $iv.openssl_encrypt($text, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
-    return sitedogSafeString($result);
-}
-
-function sitedogDecrypt($text, $key) {
-    $text = sitedogRawString($text);
-    $iv_size = openssl_cipher_iv_length('AES-256-CBC');
-    $iv = substr($text, 0, $iv_size);
-    $text = substr($text, $iv_size);
-    $result = openssl_decrypt($text, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
-    return $result;
-}
-
-/*
- * RFC3548
+/**
+ *  Change this value to your own.
+ *  You can improve security if set arbitrary salt
+ *  that will be added to md5 hashes
  */
-function sitedogSafeString($text) {
-    return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
+$salt = '{{$salt}}';
+
+/**
+ * Sitedog Class for
+ *
+ */
+class SiteDog
+{
+    protected static $key = '{{$key}}';
+    protected static $salt = '';
+
+    protected static $isOpenSSL = false;
+    protected static $isMcrypt  = false;
+    protected static $response = array();
+
+    public static function BootStrap($salt)
+    {
+        static::$isOpenSSL = function_exists('openssl_encrypt');
+        static::$isMcrypt = function_exists('mcrypt_encrypt');
+        static::$key = static::raw(static::$key);
+        static::$salt = $salt;
+
+        try {
+            if (!isset($_POST['cmd'])) {
+                static::commandNone();
+            }
+
+            $command = json_decode(static::decrypt($_POST['cmd'], static::$key), true);
+
+            if ($command['command'] == 'check') {
+                static::commandCheck($command);
+            }
+
+        } catch(Exception $e) {
+            static::$response['error'] = 1;
+            static::$response['message'] = $e->getMessage();
+        }
+
+        static::response();
+    }
+
+
+    protected static function commandNone()
+    {
+        echo 'Sitedog';
+        die;
+    }
+
+    protected static function commandCheck($command)
+    {
+        $dir = $command['directory'];
+        if(empty($dir)) {
+            $dir = $_SERVER['DOCUMENT_ROOT'];
+        }
+        if (!is_dir($dir) || !is_readable($dir)) {
+            throw new Exception('Start directory not found');
+        }
+
+        $extensions = array();
+        if (!empty($command['extensions'])) {
+            $extensions = explode(',', $command['extensions']);
+        }
+
+        $begin = microtime(true);
+        $limit = (ini_get('max_execution_time') - 2)*1000;
+        static::$response['files'] = array();
+        static::fileSearch($dir, $extensions, $begin, $limit);
+    }
+
+    protected static function fileSearch($dir, $extensions, $begin, $limit) {
+        $files = array();
+        if (is_dir($dir) && is_readable($dir) && $handle = opendir($dir)) {
+            while (false !== ($file = readdir($handle))) {
+                if (microtime(true) - $begin > $limit) {
+                    throw new Exception('Not enough time');
+                }
+                if (!in_array($file, array('.', '..'))) {
+                    $filename = $dir.'/'.$file;
+                    if (is_readable($filename)) {
+                        if (is_dir($filename)) {
+                            static::fileSearch($filename, $extensions, $begin, $limit);
+                        } else {
+                            $ext = pathinfo($filename, PATHINFO_EXTENSION);
+                            if (in_array($ext, $extensions)) {
+                                static::$response['files'][md5(static::$salt.$filename)] = md5(static::$salt.md5_file($filename));
+                            }
+                        }
+                    }
+                }
+            }
+            closedir($handle);
+        }
+    }
+
+
+    protected static function response()
+    {
+       echo static::encrypt(json_encode(static::$response), static::$key);
+    }
+
+    protected static function encrypt($text, $key)
+    {
+        if (static::$isOpenSSL) {
+            return static::encryptOpenSSL($text, $key);
+        } elseif (static::$isMcrypt) {
+            return static::encryptMcrypt($text, $key);
+        } else {
+            throw new \Exception('No any crypto extension');
+        }
+    }
+
+    protected static function decrypt($text, $key)
+    {
+        if (static::$isOpenSSL) {
+            return static::decryptOpenSSL($text, $key);
+        } elseif (static::$isMcrypt) {
+            return static::decryptMcrypt($text, $key);
+        } else {
+            throw new \Exception('No any crypto extension');
+        }
+    }
+
+    protected static function encryptOpenSSL($text, $key) {
+        $iv_size = openssl_cipher_iv_length('AES-256-CBC');
+        $iv = openssl_random_pseudo_bytes($iv_size);
+        if (strlen($iv) != $iv_size) {
+            throw new Exception('Error receiving IV');
+        }
+        $result = $iv.openssl_encrypt($text, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+        return static::safe($result);
+    }
+
+    protected static function decryptOpenSSL($text, $key) {
+        $text = static::raw($text);
+        $iv_size = openssl_cipher_iv_length('AES-256-CBC');
+        $iv = substr($text, 0, $iv_size);
+        $text = substr($text, $iv_size);
+        $result = openssl_decrypt($text, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+        return $result;
+    }
+
+    protected static function encryptMcrypt($text, $key) {
+        $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+        $iv = mcrypt_create_iv($iv_size, MCRYPT_DEV_URANDOM);
+        if (strlen($iv) != $iv_size) {
+            throw new Exception('Error receiving IV');
+        }
+        $result = $iv.mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $text, MCRYPT_MODE_CBC, $iv);
+        return static::safe($result);
+    }
+
+    protected static function decryptMcrypt($text, $key) {
+        $text = static::raw($text);
+        $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+        $iv = substr($text, 0, $iv_size);
+        $text = substr($text, $iv_size);
+        $result = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $key, $text, MCRYPT_MODE_CBC, $iv);
+        return $result;
+    }
+
+    protected static function safe($text) {
+        return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
+    }
+
+    protected static function raw($text) {
+        return base64_decode(str_pad(strtr($text, '-_', '+/'), strlen($text) % 4, '=', STR_PAD_RIGHT));
+    }
+
 }
 
-function sitedogRawString($text) {
-    return base64_decode(str_pad(strtr($text, '-_', '+/'), strlen($text) % 4, '=', STR_PAD_RIGHT));
-}
+ini_set('display_errors', false);
+SiteDog::BootStrap($salt);

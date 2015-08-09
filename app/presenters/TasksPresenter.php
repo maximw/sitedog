@@ -2,22 +2,24 @@
 
 namespace App\Presenters;
 
+use App\Models;
+
 use Nette;
 use Nette\Application\UI;
 
 class TasksPresenter extends BasePresenter
 {
 
+    /**
+     * @var \App\Models\Crypto @inject
+     */
+    public $cryptoModel;
+
+
     public function actionDefault()
     {
         $this->template->tasks = $this->tasksModel->getByUser($this->getUser()->getId());
 
-    }
-
-    public function actionTest()
-    {
-        $task = $this->tasksModel->getNextToCheck();
-die;
     }
 
     public function actionChecks($id = 0)
@@ -36,6 +38,7 @@ die;
             $temp_files = $this->formatTemplateFiles();
             $this->template->setFile($temp_files[0]);
             $this->template->key = $task->password;
+            $this->template->salt = $this->tasksModel->generateSalt();
             $code = '<?php'.PHP_EOL.(string)$this->template;
 
             header("Cache-Control: private");

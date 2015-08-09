@@ -58,20 +58,11 @@ class Contact extends \Kdyby\Doctrine\Entities\BaseEntity
      **/
     protected $tasks;
 
-    protected $channel;
+    public $channel;
 
     public function __construct()
     {
         $this->tasks = new \Doctrine\Common\Collections\ArrayCollection();
-    }
-
-    public function getChannel()
-    {
-        if (empty($this->channel)) {
-            $factory = new \App\Models\Channels\ChannelsFactory();
-            $this->channel = $factory->getChannel($this->type, $this->value);
-        }
-        return $this->channel;
     }
 
 }

@@ -12,6 +12,13 @@ class ChannelsFactory extends Nette\Object
         3 => 'Http Post request',
     );
 
+    protected $configModel;
+
+    public function __construct(\App\Models\Config $config)
+    {
+        $this->configModel = $config;
+    }
+
     public function getTypes()
     {
         return $this->types;
@@ -25,13 +32,16 @@ class ChannelsFactory extends Nette\Object
     public function getChannel($id, $value)
     {
         if ($id == 1) {
-            return new EmailChannel($value);
+            $config = $this->configModel->get('channels:email');
+            return new EmailChannel($value, $config);
         }
         if ($id == 2) {
-            return new TelegramChannel($value);
+            $config = $this->configModel->get('channels:telegram');
+            return new TelegramChannel($value, $config);
         }
         if ($id == 3) {
-            return new PostChannel($value);
+            $config = $this->configModel->get('channels:post');
+            return new PostChannel($value, $config);
         }
     }
 

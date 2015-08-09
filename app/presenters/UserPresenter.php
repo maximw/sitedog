@@ -17,9 +17,6 @@ class UserPresenter extends BasePresenter
     public $usersModel;
 
     public function actionRegister() {
-
-        
-
         $this->usersModel->create();
         $this->usersModel->all();
     }

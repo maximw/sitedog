@@ -68,7 +68,7 @@ class Tasks extends Nette\Object
         }
 
         $task->directory = $data['directory'];
-        
+
         $task->extensions = static::normalizeExtensions($data['extensions']);
 
         foreach($task->contacts as $contact) {
@@ -117,6 +117,7 @@ class Tasks extends Nette\Object
         $qb->setMaxResults($limit);
         $query = $qb->getQuery();
         $tasks = $query->getResult();
+
         return $tasks;
     }
 
@@ -132,15 +133,18 @@ class Tasks extends Nette\Object
         $this->em->persist($check);
         $this->em->flush();
 
+        $password = $this->cryptoModel->raw($task->password);
+
         $command = array();
         $command['command'] = 'check';
         $command['directory'] = $task->directory;
         $command['extensions'] = $task->extensions;
-        $cmd = $this->cryptoModel->encrypt(json_encode($command), $task->password);
+        $cmd = $this->cryptoModel->encrypt(json_encode($command), $password);
+        $cmd = $this->cryptoModel->safe($cmd);
 
         try {
             $curl = curl_init();
-            curl_setopt($curl, CURLOPT_USERAGENT, 'uufilemon');
+            curl_setopt($curl, CURLOPT_USERAGENT, 'Sitedog');
             curl_setopt($curl, CURLOPT_HEADER, false);
             curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -159,8 +163,9 @@ class Tasks extends Nette\Object
                 throw new \Exception('HTTP code: '.$http_code);
             }
 
-            $result = $this->cryptoModel->decrypt($response, $task->password);
-            $result = json_decode($result);
+            $response = $this->cryptoModel->raw($response);
+            $result = $this->cryptoModel->decrypt($response, $password);
+            $result = json_decode($result, true);
 
             if (json_last_error()) {
                 throw new \Exception('JSON error: '.json_last_error().' '.json_last_error_msg());
@@ -171,14 +176,14 @@ class Tasks extends Nette\Object
             }
 
             $prevfiles = array();
-            if ($task->status == static::CHECK_SUCCESS) {
-                $prevfiles = json_decode($task->last_result);
+            if ($task->last_status == static::CHECK_SUCCESS) {
+                $prevfiles = json_decode($task->last_result, true)['files'];
                 if (json_last_error()) {
                     throw new \Exception('Taks JSON error: '.json_last_error().' '.json_last_error_msg());
                 }
             }
-            $lastfiles = $result;
 
+            $lastfiles = $result['files'];
             $comparison  = array();
             $changed = 0;
             $new = 0;
@@ -204,29 +209,23 @@ class Tasks extends Nette\Object
             }
 
             $check->status = static::CHECK_SUCCESS;
-            $check->result = $result;
-            $check->comparison = $comparison;
+            $check->result = json_encode($result);
+            $check->comparison = json_encode($comparison);
             $check->finish_time = time();
-            $check->changed = 0;
-            $check->new = 0;
-            $check->deleted = 0;
+            $check->changed = $changed;
+            $check->new = $new;
+            $check->deleted = $deleted;
 
             $task->last_status = static::CHECK_SUCCESS;
-            $task->last_result = $result;
+            $task->last_result = json_encode($result);
             $task->last_check = time();
-            $task->changed = 0;
-            $task->new = 0;
-            $task->deleted = 0;
+            $task->changed = $changed;
+            $task->new = $new;
+            $task->deleted = $deleted;
 
             $this->em->persist($check);
             $this->em->persist($task);
             $this->em->flush();
-
-            if ($changed > 0 ||  $new > 0 || $deleted > 0) {
-                foreach($task->contacts as $contact) {
-                    $contact->getChannel()->sendAlert($task);
-                }
-            }
 
         } catch (\Exception $e) {
 
@@ -245,11 +244,21 @@ class Tasks extends Nette\Object
             $this->em->flush();
             $this->em->persist($task);
             $this->em->flush();
+            return;
 
         }
-        
+
+        if (true || $changed > 0 ||  $new > 0 || $deleted > 0) {
+            foreach($task->contacts as $contact) {
+                $this->contactsModel->getChannel($contact)->sendAlert($task);
+            }
+        }
     }
 
+    public function generateSalt()
+    {
+        return $this->cryptoModel->getRandom(18, true);
+    }
 
 
     protected static function normalizeUrl($url)
