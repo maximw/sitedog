@@ -8,7 +8,6 @@ class ChannelsFactory extends Nette\Object
 {
     protected $types = array(
         1 => 'Email',
-        2 => 'Telegram',
         3 => 'Http Post request',
     );
 
@@ -34,10 +33,6 @@ class ChannelsFactory extends Nette\Object
         if ($id == 1) {
             $config = $this->configModel->get('channels:email');
             return new EmailChannel($value, $config);
-        }
-        if ($id == 2) {
-            $config = $this->configModel->get('channels:telegram');
-            return new TelegramChannel($value, $config);
         }
         if ($id == 3) {
             $config = $this->configModel->get('channels:post');

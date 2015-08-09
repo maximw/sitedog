@@ -18,7 +18,7 @@ class EmailChannel extends BaseChannel
             ->setBody($message);
 
         $mailer = new SendmailMailer;
-        $mailer->send($mail);
+        //$mailer->send($mail);
     }
 
     public function formatAlert($task)

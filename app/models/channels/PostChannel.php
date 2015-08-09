@@ -8,11 +8,6 @@ use Nette\Mail\SendmailMailer;
 
 class PostChannel extends BaseChannel
 {
-    protected $value;
-
-    public function __construct($value) {
-        $this->value = $value;
-    }
 
     public function sendMessage($message)
     {
