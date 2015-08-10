@@ -14,7 +14,6 @@ class ContactsPresenter extends BasePresenter
     public function actionDefault()
     {
         $this->template->contacts = $this->contactsModel->getByUser($this->getUser()->getId());
-
     }
 
     public function actionAdd()
@@ -61,13 +60,13 @@ class ContactsPresenter extends BasePresenter
 	public function contactFormSucceeded($button)
 	{
 		$values = $button->getForm()->getValues();
-		
+
         $contact = array(
                 'user_id' => $this->getUser()->getId(),
                 'type' => $values['type'],
                 'value' => $values['value'],
             );
-        
+
         try {
             $this->contactsModel->save($contact);
             $this->flashMessage('Contact was added');

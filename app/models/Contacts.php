@@ -67,6 +67,7 @@ class Contacts extends Nette\Object
     public function getById($id)
     {
         $contact = $this->contactsRepo->findOneBy(['id' => $id]);
+        $this->getChannel($contact);
         return $contact;
     }
 

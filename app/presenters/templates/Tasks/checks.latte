@@ -9,9 +9,9 @@ Checks
 <div class="container">
     <div class="row">
         <p>
-            <a n:href="Tasks:checks $task->id" class="btn {$filter == '' ? 'btn-info' : 'btn-primary' }">All</a>
-            <a n:href="Tasks:checks $task->id, 'changes'" class="btn {$filter == 'changes' ? 'btn-info' : 'btn-primary' }">With changes</a>
-            <a n:href="Tasks:checks $task->id, 'errors'" class="btn {$filter == 'errors' ? 'btn-info' : 'btn-primary' }">With errors</a>
+            <a n:href="checks $task->id" class="btn {$filter == '' ? 'btn-info' : 'btn-primary' }">All</a>
+            <a n:href="checks $task->id, 'changes'" class="btn {$filter == 'changes' ? 'btn-info' : 'btn-primary' }">With changes</a>
+            <a n:href="checks $task->id, 'errors'" class="btn {$filter == 'errors' ? 'btn-info' : 'btn-primary' }">With errors</a>
         </p>
     </div>
     <div class="row">
