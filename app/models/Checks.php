@@ -32,4 +32,26 @@ class Checks extends Nette\Object
         return $task;
     }
 
+    public function getByTask($task_id, $filter = '', $limit = 100)
+    {
+        $qb = $this->checksRepo->createQueryBuilder('t');
+        $qb->where($qb->expr()->eq('IDENTITY(t.task)', $task_id));
+        if ($filter == 'changes') {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                       $qb->expr()->gt('t.new', 0),
+                       $qb->expr()->gt('t.changed', 0),
+                       $qb->expr()->gt('t.deleted', 0)
+                )
+            );
+        } elseif ($filter == 'errors') {
+            $qb->andWhere($qb->expr()->neq('t.status', \App\Models\Tasks::CHECK_SUCCESS));
+        }
+        $qb->orderBy('t.start_time', 'DESC');
+        $qb->setMaxResults($limit);
+        $query = $qb->getQuery();
+        $checks = $query->getResult();
+        return $checks;
+    }
+
 }

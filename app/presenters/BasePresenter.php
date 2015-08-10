@@ -32,6 +32,11 @@ abstract class BasePresenter extends Nette\Application\UI\Presenter
      */
     public $contactsModel;
 
+    /**
+     * @var \App\Models\Checks @inject
+     */
+    public $checksModel;
+
     public function startup()
     {
         parent::startup();

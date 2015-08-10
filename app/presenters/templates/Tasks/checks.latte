@@ -1,0 +1,58 @@
+{layout "../@layout.latte"}
+
+{block title}
+Checks
+{/block}
+
+{block content}
+{snippet table}
+<div class="container">
+    <div class="row">
+        <p>
+            <a n:href="Tasks:checks $task->id" class="btn {$filter == '' ? 'btn-info' : 'btn-primary' }">All</a>
+            <a n:href="Tasks:checks $task->id, 'changes'" class="btn {$filter == 'changes' ? 'btn-info' : 'btn-primary' }">With changes</a>
+            <a n:href="Tasks:checks $task->id, 'errors'" class="btn {$filter == 'errors' ? 'btn-info' : 'btn-primary' }">With errors</a>
+        </p>
+    </div>
+    <div class="row">
+        <h2>Check for "{$task->title}"</h2>
+    </div>
+    <div class="row">
+        <table class="grid table table-hover">
+        <thead>
+        <tr>
+            <th>Start date</th>
+            <th>Finish date</th>
+            <th>Status</th>
+            <th>New files</th>
+            <th>Changed files</th>
+            <th>Deleted files</th>
+        </tr>
+        </thead>
+        <tbody class="">
+        {foreach $checks as $check}
+        <tr>
+            <td>{date('d-m-Y H:i', $check->start_time)}</td>
+            <td>{date('d-m-Y H:i', $check->finish_time)}</td>
+            <td>
+                {if ($check->status != \App\Models\Tasks::CHECK_SUCCESS) }
+                    <span class="label label-danger">Erorr</span>
+                {else}
+                    <span class="label label-success">Ok</span>
+                {/if}
+            </td>
+                {if ($check->status != \App\Models\Tasks::CHECK_SUCCESS) }
+                    <td colspan="3">{$check->result}</span>
+                {else}
+                    <td>{$check->new}</td>
+                    <td>{$check->changed}</td>
+                    <td>{$check->deleted}</td>
+                {/if}
+        </tr>
+        {/foreach}
+        </tbody>
+        </table>
+    </div>
+</div>
+{/snippet}
+{/block}

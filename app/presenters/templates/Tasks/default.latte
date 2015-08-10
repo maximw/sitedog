@@ -32,11 +32,17 @@ Tasks
             <td>{$task->directory}</td>
             <td>{$task->extensions}</td>
             <td>{count($task->contacts)}</td>
-            <td>{$task->last_status}</td>
+            <td>
+                {if ($task->last_status != \App\Models\Tasks::CHECK_SUCCESS) }
+                    <span class="label label-danger">Erorr</span>
+                {else}
+                    <span class="label label-success">Ok</span>
+                {/if}
+            </td>
             <td>{$task->last_check ? date('d-m-Y H:i', $task->last_check) : '-'}</td>
             <td class="text-right">
                 <a n:href="download, $task->id" class="btn btn-link btn-xs"><i class="fa fa-download fa-1"></i>&nbsp;Client</a>
-                <a n:href="checks, $task->id" class="btn btn-success btn-xs"><i class="fa fa-check-circle-o fa-1"></i>&nbsp;Checks</a>
+                <a n:href="checks, $task->id" class="btn btn-info btn-xs"><i class="fa fa-check-circle-o fa-1"></i>&nbsp;Checks</a>
                 <a n:href="edit, $task->id" class="btn btn-primary btn-xs"><i class="fa fa-pencil-square-o fa-1"></i>&nbsp;Edit</a>
                 <a n:href="delete, $task->id" class="btn btn-danger btn-xs"><i class="fa fa-minus-circle fa-1"></i>&nbsp;Delete</a>
             </td>

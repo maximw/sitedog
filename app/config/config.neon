@@ -65,6 +65,7 @@ services:
     - App\Models\Users
     - App\Models\Tasks
     - App\Models\Contacts
+    - App\Models\Checks
     - App\Models\Channels\ChannelsFactory
 
 extensions:

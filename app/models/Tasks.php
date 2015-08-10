@@ -18,7 +18,7 @@ class Tasks extends Nette\Object
     /**
      * @var integer $defaultInterval Default interval between checks in seconds
      */
-    protected static $defaultInterval = 3600;
+    protected static $defaultInterval = 600;
 
     const CHECK_UNKNOWN = 0;
     const CHECK_SUCCESS = 1;
@@ -111,9 +111,9 @@ class Tasks extends Nette\Object
     public function getNextToCheck($limit)
     {
         $qb = $this->tasksRepo->createQueryBuilder('t');
-        //$qb->where($qb->expr()->lt($qb->expr()->sum('t.last_check', 't.check_interval'), ':time'));
+        $qb->where($qb->expr()->lt($qb->expr()->sum('t.last_check', 't.check_interval'), ':time'));
         $qb->orderBy($qb->expr()->sum('t.last_check', 't.check_interval'), 'ASC');
-        //$qb->setParameter('time', time());
+        $qb->setParameter('time', time());
         $qb->setMaxResults($limit);
         $query = $qb->getQuery();
         $tasks = $query->getResult();

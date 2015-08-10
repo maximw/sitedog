@@ -22,9 +22,24 @@ class TasksPresenter extends BasePresenter
 
     }
 
-    public function actionChecks($id = 0)
+    public function actionChecks($id = 0, $filter = '')
     {
-        $this->error('Not ready yet');
+        if ($id <= 0) {
+            $this->error('No permissions');
+        }
+
+        if (!in_array($filter, array('', 'changes', 'errors'))) {
+            $this->redirect('Tasks:checks', array('id' => $id));
+        }
+
+        $task = $this->tasksModel->getById($id);
+        if (!$task || $task->user->id != $this->getUser()->getId()) {
+            $this->error('No permissions');
+        }
+
+        $this->template->filter = $filter;
+        $this->template->task = $task;
+        $this->template->checks = $this->checksModel->getByTask($id, $filter);
     }
 
     public function actionDownload($id = 0)
